@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
 
-try:
-    import ujson as json
-    print("ujson: ok")
-except:
-    import json
-
 import asyncio
 import logging
 
