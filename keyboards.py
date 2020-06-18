@@ -26,6 +26,17 @@ def msc():
     return markup
 
 
+def about_bot():
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+    markup.add(
+        KeyboardButton("Инструкция"),
+        KeyboardButton("Исходный код"),
+        KeyboardButton("QR - ссылка на Бота"),
+        KeyboardButton("👑 Главное меню")
+    )
+    return markup
+
+
 def polls_navigation():
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(

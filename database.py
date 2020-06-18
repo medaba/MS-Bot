@@ -60,56 +60,5 @@ class AioSQL:
             return all_msc
 
 
-    # @staticmethod
-    # async def migrate_mcs_table_from_site_to_db():
-    #     """Заполняет таблицу
-    #     """
-    #     bs = BS()
-    #     site_table = bs.create_mscenters_list()
-    #
-    #     async with aiosqlite.connect("g35.sqlite") as db:
-    #         for item in site_table:
-    #             await db.execute("""INSERT INTO mscenter(country, city, title, address) VALUES (?, ?, ?, ?)""",
-    #                              parameters=item)
-    #         await db.commit()
-
-
-
-class AioSQLiteWrapper:
-    """Класс для работы с aiosqlite
-    """
-
-    def __init__(self, db_path, table_name):
-        self.db_path = db_path
-        self.table_name = table_name
-
-    async def create_table(self, arguments: tuple):
-        async with aiosqlite.connect(self.db_path) as db:
-            await db.execute(f"""CREATE TABLE IF NOT EXISTS {self.table_name}{arguments}""")
-
-    async def add_new_row(self, arguments: tuple, values: tuple):
-        async with aiosqlite.connect(self.db_path) as db:
-            await db.execute(f"""INSERT INTO {self.table_name}{arguments} VALUES {values}""")
-            await db.commit()
-
-    async def fetch_one(self):
-        pass
-
-    async def fetch_all(self):
-        async with aiosqlite.connect(self.db_path) as db:
-            return await db.execute_fetchall(f"""SELECT * FROM {self.table_name}""")
-
-
-
-
 if __name__ == '__main__':
-    a = AioSQLiteWrapper("matest.db", "tests")
-
-
-    loop = asyncio.get_event_loop()
-    # print(loop.run_until_complete(a.get_all_msc()))
-    # loop.run_until_complete(a.create_table(("one", "two", "three")))
-    r = loop.run_until_complete(a.fetch_all())
-    print(r)
-    # loop.run_until_complete(a.add_new_row(("one", "two", "three"), ("boom", "bam", "bom")))
-
+    pass

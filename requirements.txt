@@ -1,7 +1,7 @@
-aiosqlite
 aiodns==2.0.0
 aiogram==2.6.1
 aiohttp==3.6.2
+aiosqlite==0.13.0
 async-timeout==3.0.1
 attrs==19.3.0
 Babel==2.8.0
@@ -10,8 +10,11 @@ cchardet==2.1.6
 certifi==2019.11.28
 cffi==1.14.0
 chardet==3.0.4
+geographiclib==1.50
+geopy==1.22.0
 idna==2.9
 multidict==4.7.5
+pkg-resources==0.0.0
 pycares==3.1.1
 pycparser==2.20
 pytz==2019.3

@@ -3,6 +3,8 @@
 import asyncio
 import logging
 
+from geopy.distance import distance
+
 from aiogram import types
 from aiogram.types import Message
 from aiogram.types import ChatType
@@ -10,9 +12,8 @@ from aiogram.bot import api
 from aiogram import Bot, Dispatcher, executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
-from geopy.distance import distance
-
 import config
+import utils
 import keyboards
 from database import AioSQL
 from polls_ids import polls_id
@@ -27,12 +28,6 @@ logging.basicConfig(
     )
 
 
-if config.from_russia is True:
-    # Подмена базового URL для обхода блокировки, если бот запускается из России
-    PATCHED_URL = "https://telegg.ru/orig/bot{token}/{method}"
-    setattr(api, 'API_URL', PATCHED_URL)
-
-
 bot = Bot(token=config.token, parse_mode="Markdown")
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
@@ -43,6 +38,7 @@ async def startup(*args):
         await bot.send_message(chat_id=config.main_admin, text="База, я на связи ✅")
     except Exception as e:
         print(e)
+
 
 async def shutdown(*args):
     try:
@@ -57,6 +53,7 @@ async def main_menu(m: Message):
         reply_markup=keyboards.main_menu()
     )
 
+    # TODO: вынести след. блок за пределы ф-и
     # Добавление юзера, или обнуление страниц.
     try:
         await AioSQL.get_user_polls_page(m.from_user.id)
@@ -82,6 +79,18 @@ async def start(m: Message):
 #     )
 
 
+@dp.message_handler(content_types=['photo'])
+async def get_photo_id(m: Message):
+    """
+    Возвращает админу бота ID отправленного фото.
+    """
+    if m.from_user.id in config.admins:
+        await m.answer(
+            f"`{m.photo[-1]['file_id']}`",
+            parse_mode=None
+        )
+
+
 @dp.message_handler(ChatType.is_private, text="👑 Главное меню")
 async def show_main_menu(m: Message):
     await main_menu(m)
@@ -90,7 +99,24 @@ async def show_main_menu(m: Message):
 @dp.message_handler(ChatType.is_private, text=['🤖 О Боте'])
 async def info(m: Message):
     await m.answer(
-        "Подробнее о боте. \n\n"
+        "*Подробнее о боте* \n\n",
+        reply_markup=keyboards.about_bot()
+    )
+
+
+@dp.message_handler(ChatType.is_private, text=["QR - ссылка на Бота"])
+async def qr(m: Message):
+    await m.answer_photo(
+        photo="AgACAgIAAxkBAAIajF7nfZzd3qFJrxCXAgAB3AkcIwEJSwACtKwxG1rQQEst6R9PHqKCxin-HJUuAAMBAAMCAAN4AAN3bAACGgQ",
+        caption=r"https://t.me/g35_robot",
+        parse_mode="HTML"
+    )
+
+
+@dp.message_handler(ChatType.is_private, text=["Исходный код"])
+async def source_code(m: Message):
+    await m.answer(
+        "https://github.com/medaba/MS-Bot"
     )
 
 
@@ -133,8 +159,7 @@ async def polls(m: Message):
     await m.answer(
         "⚠️ ВНИМАНИЕ. Далее идёт блок опросов для пациентов c Рассеянным склерозом \n\n"
         "Если болеете не вы, а ваш близкий, то допускается голосование от его лица. \n\n"
-        "Если со временем произошли какие-либо изменения, "
-        "то вы можете просто отменить свой голос и переголосовать заново\n\n\n"
+        "Вы всегда можете отменить свой голос и переголосовать заново\n\n\n"
         "Для перехода к началу опросов нажмите 'Вперед >>'",
         reply_markup=keyboards.polls_navigation()
     )
@@ -157,6 +182,8 @@ async def show_all_msc(m: Message):
     )
 
 
+# TODO переписать ф-ю. Вынести вычисление расстояния в отдельный модуль
+
 @dp.message_handler(ChatType.is_private, content_types=['location'])
 async def proc_location(m: Message):
     user_coords = (m.location.latitude, m.location.longitude) # координаты пользователя
@@ -177,15 +204,6 @@ async def proc_location(m: Message):
         m.message_id
     )
 
-    answer = ", ".join(best_address[:4])
-    await m.answer(
-        "Ближайший от вас Центр Рассеянного Cклероза находится по адресу: \n\n"
-        f"{answer} \n"
-        f"Расстояние: {round(best_distance.km, 1)} км."
-    )
-
-    await asyncio.sleep(1)
-
     await bot.send_venue(
         m.chat.id,
         best_address[4],
@@ -193,6 +211,19 @@ async def proc_location(m: Message):
         best_address[3],
         best_address[2]
     )
+
+    await asyncio.sleep(1)
+
+    answer = ", ".join(best_address[:4])
+    await m.answer(
+        "Ближайший от вас Центр Рассеянного Cклероза находится по адресу: \n\n"
+        f"{answer} \n"
+        f"Расстояние: {round(best_distance.km, 1)} км."
+    )
+
+
+
+
 
 
 @dp.message_handler(ChatType.is_private, text=['☎️ Контакты'])
@@ -232,6 +263,22 @@ async def info(m: Message):
     await polls(m)
 
 
+@dp.message_handler(commands=['g35'])
+async def say_to_g35(m: Message):
+    """
+    Сказать от имени бота в G35
+    """
+    text = utils.edit_cmd(m.text)
+    await bot.send_message(
+        config.matests,
+        text
+    )
+    await bot.send_animation(
+        chat_id=config.matests,
+        animation="AAMCAgADGQEAAhqvXueMLoIs36dZrmU_cI1hrYoRBoQAAkMGAAKdpiFJRp2_h30a5ePbScoOAAQBAAdtAAO2fAACGgQ"
+    )
+
+
 @dp.message_handler(commands=['myid'])
 async def my_id(m: Message):
     """
@@ -250,12 +297,12 @@ async def i_am_alive(sleep_for=28800):
     Отправляет админу сообщение о своей работоспособности каждые 'sleep_for' секунд.
     """
     while True:
+        await asyncio.sleep(sleep_for)  # Пауза. Цикл замирает на sleep_for секунд
         await bot.send_message(
             config.main_admin,
             "I am alive ",
             disable_notification=True
         )
-        await asyncio.sleep(sleep_for)   # Пауза. Цикл замирает на sleep_for секунд
 
 
 if __name__ == '__main__':
