@@ -182,7 +182,7 @@ async def show_all_msc(m: Message):
 
 @dp.message_handler(ChatType.is_private, content_types=['location'])
 async def proc_location(m: Message):
-    user_coords = (m.location.latitude, m.location.longitude) # координаты пользователя
+    user_coords = (m.location.latitude, m.location.longitude)  # координаты пользователя
     try:
         users_table = AioSQLiteWrapper("g35.sqlite", table_name="users")
         await users_table.save_location(m.from_user.id, user_coords)

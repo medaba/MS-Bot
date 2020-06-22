@@ -121,7 +121,8 @@ class AioSQLiteWrapper:
 
     async def save_location(self, user_id, lat_lon):
         async with aiosqlite.connect(self.db_path) as db:
-            await db.execute(f'UPDATE {self.table_name} SET (latitude, longitude) = {lat_lon} WHERE user_id = {user_id}')
+            await db.execute(f"UPDATE {self.table_name} SET latitude = {lat_lon[0]} WHERE user_id = {user_id}")
+            await db.execute(f"UPDATE {self.table_name} SET longitude = {lat_lon[1]} WHERE user_id = {user_id}")
             await db.commit()
 
 
