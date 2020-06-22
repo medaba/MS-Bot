@@ -6,16 +6,18 @@ import logging
 from geopy.distance import distance
 
 from aiogram import types
-from aiogram.types import Message
-from aiogram.types import ChatType
-from aiogram.bot import api
+from aiogram.types import Message, ChatType
+from aiogram.types import ReplyKeyboardRemove
 from aiogram import Bot, Dispatcher, executor
+from aiogram.dispatcher import FSMContext
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 import config
 import utils
 import keyboards
-from database import AioSQL
+import mailing
+from form import Form
+from database import AioSQLiteWrapper
 from polls_ids import polls_id
 
 
@@ -27,6 +29,7 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
     )
 
+logger = logging.getLogger()
 
 bot = Bot(token=config.token, parse_mode="Markdown")
 storage = MemoryStorage()
@@ -53,13 +56,18 @@ async def main_menu(m: Message):
         reply_markup=keyboards.main_menu()
     )
 
-    # TODO: вынести след. блок за пределы ф-и
     # Добавление юзера, или обнуление страниц.
+    # Включение статуса active
+    users_table = AioSQLiteWrapper("g35.sqlite", "users")
     try:
-        await AioSQL.get_user_polls_page(m.from_user.id)
-        await AioSQL.update_user(m.from_user.id, 0)
+        await users_table.fetch_one(m.from_user.id)
+        await users_table.set_user_active(m.from_user.id)
+        await users_table.set_user_polls_page(m.from_user.id, 0)
     except:
-        await AioSQL.add_user(m.from_user.id, 0)
+        await users_table.add_row("(user_id, first_name, last_name, username)",
+                                  f"({m.from_user.id}, '{m.from_user.first_name}', '{m.from_user.last_name}', '{m.from_user.username}')")
+        print("Добавлен новый пользователь")
+
 
 
 @dp.message_handler(ChatType.is_private, commands=['start'])
@@ -77,18 +85,6 @@ async def start(m: Message):
 #         m.chat.id,
 #         str(m.as_json())
 #     )
-
-
-@dp.message_handler(content_types=['photo'])
-async def get_photo_id(m: Message):
-    """
-    Возвращает админу бота ID отправленного фото.
-    """
-    if m.from_user.id in config.admins:
-        await m.answer(
-            f"`{m.photo[-1]['file_id']}`",
-            parse_mode=None
-        )
 
 
 @dp.message_handler(ChatType.is_private, text="👑 Главное меню")
@@ -187,13 +183,20 @@ async def show_all_msc(m: Message):
 @dp.message_handler(ChatType.is_private, content_types=['location'])
 async def proc_location(m: Message):
     user_coords = (m.location.latitude, m.location.longitude) # координаты пользователя
-    all_msc = await AioSQL.get_all_msc()                      # список кортежей рс-центров из БД
-    best_distance = 1000000               # "максимально невозможное" расстояние от юзера до рсц
+    try:
+        users_table = AioSQLiteWrapper("g35.sqlite", table_name="users")
+        await users_table.save_location(m.from_user.id, user_coords)
+    except Exception as e:
+        print(e)
+
+    mscenter_table = AioSQLiteWrapper("g35.sqlite", "mscenter")
+    all_msc = await mscenter_table.fetch_all()   # список кортежей рс-центров из БД
+    best_distance = 1000000                      # "максимально невозможное" расстояние от юзера до рсц
     best_address = None
 
     for msc in all_msc:
-        msc_coords = (msc[4], msc[5])              # координаты текущего рс-центра
-        dist = distance(user_coords, msc_coords)   # получение расстояния от юзера, до рс-центра
+        msc_coords = (msc[4], msc[5])            # координаты текущего рс-центра
+        dist = distance(user_coords, msc_coords) # получение расстояния от юзера, до рс-центра
 
         if dist < best_distance:
             best_distance = dist
@@ -222,25 +225,21 @@ async def proc_location(m: Message):
     )
 
 
-
-
-
-
-@dp.message_handler(ChatType.is_private, text=['☎️ Контакты'])
-async def contacts(m: Message):
-    await m.answer(
-        "*Контакты*"
-    )
+@dp.message_handler(content_types=['contact'])
+async def contact_proc(m: Message):
+    users_table = AioSQLiteWrapper("g35.sqlite", table_name="users")
+    await users_table.save_phone(m.from_user.id, m.contact.phone_number)
 
 
 @dp.message_handler(ChatType.is_private, text=["Вперед >>"])
 async def info(m: Message):
-    current_polls_page = await AioSQL.get_user_polls_page(m.from_user.id)
+    users_table = AioSQLiteWrapper("g35.sqlite", "users")
+    current_polls_page = await users_table.get_user_polls_page(m.from_user.id)
     next_page = current_polls_page + 1
     if next_page <= len(polls_id):
         poll_id = polls_id[next_page]
         await bot.forward_message(m.from_user.id, config.main_admin, poll_id)
-        await AioSQL.update_user(m.from_user.id, next_page)
+        await users_table.set_user_polls_page(m.from_user.id, next_page)
     elif next_page > len(polls_id):
         await m.answer(
             "Конец блока опросов"
@@ -249,18 +248,40 @@ async def info(m: Message):
 
 @dp.message_handler(ChatType.is_private, text=["<< Назад"])
 async def info(m: Message):
-    current_polls_page = await AioSQL.get_user_polls_page(m.from_user.id)
+    users_table = AioSQLiteWrapper("g35.sqlite", "users")
+    current_polls_page = await users_table.get_user_polls_page(m.from_user.id)
     previous_page = current_polls_page - 1
     if previous_page > 0:
         poll_id = polls_id[previous_page]
         await bot.forward_message(m.from_user.id, config.main_admin, poll_id)
-        await AioSQL.update_user(m.from_user.id, previous_page)
+        await users_table.set_user_polls_page(m.from_user.id, previous_page)
 
 
 @dp.message_handler(ChatType.is_private, text=["⏮️ Начало опросов"])
 async def info(m: Message):
-    await AioSQL.update_user(m.from_user.id, 0)
+    users_table = AioSQLiteWrapper("g35.sqlite", "users")
+    await users_table.set_user_polls_page(m.from_user.id, 0)
     await polls(m)
+
+
+@dp.message_handler(ChatType.is_private, commands=['mailing'])
+async def start_mailing(m: Message):
+    if m.from_user.id in config.admins:
+        await Form.message_template.set()
+        await m.answer(
+            "Отправьте мне сообщение для рассылки",
+            reply_markup=ReplyKeyboardRemove()
+        )
+
+
+@dp.message_handler(state=Form.message_template)
+async def process_msg_template(m: Message, state: FSMContext):
+    users_table = AioSQLiteWrapper("g35.sqlite", "users")
+    all_users_ids = await users_table.get_all_users_ids()
+    await mailing.start_mailing(admin_id=m.from_user.id,
+                                users_ids=all_users_ids,
+                                text=m.text)
+    await state.finish()
 
 
 @dp.message_handler(commands=['g35'])
@@ -288,6 +309,30 @@ async def my_id(m: Message):
         "Ваш ID 👇 \n\n"
         f"`{m.from_user.id}`"
     )
+
+
+@dp.message_handler(content_types=['animation'])
+async def anima(m: Message):
+    """
+    Возвращает админу бота ID отправленного фото.
+    """
+    if m.from_user.id in config.admins:
+        await m.answer(
+            f"`{m}`",
+            parse_mode=None
+        )
+
+
+@dp.message_handler(content_types=['photo'])
+async def get_photo_id(m: Message):
+    """
+    Возвращает админу бота ID отправленного фото.
+    """
+    if m.from_user.id in config.admins:
+        await m.answer(
+            f"`{m.photo[-1]['file_id']}`",
+            parse_mode=None
+        )
 
 
 async def i_am_alive(sleep_for=28800):
