@@ -31,7 +31,7 @@ def about_bot():
     markup.add(
         KeyboardButton("Инструкция"),
         KeyboardButton("Исходный код"),
-        KeyboardButton("QR - ссылка на Бота"),
+        KeyboardButton("QR-ссылка"),
         KeyboardButton("👑 Главное меню")
     )
     return markup
@@ -40,8 +40,8 @@ def about_bot():
 def polls_navigation():
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(
-        KeyboardButton("<< Назад"),
-        KeyboardButton("Вперед >>")
+        KeyboardButton("◀️ Назад"),
+        KeyboardButton("Вперед ▶️")
     )
     markup.add(KeyboardButton("⏮️ Начало опросов"))
     markup.add(KeyboardButton("👑 Главное меню"))

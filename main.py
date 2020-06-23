@@ -75,7 +75,7 @@ async def start(m: Message):
     await main_menu(m)
 
 
-# @dp.message_handler(content_types=["any"])
+# @dp.message_handler(ChatType.is_private, content_types=["any"])
 # async def send_json(m: Message):
 #     print("ok")
 #     print(str(m.as_json()))
@@ -83,7 +83,8 @@ async def start(m: Message):
 #     # print(answer)
 #     await bot.send_message(
 #         m.chat.id,
-#         str(m.as_json())
+#         str(m.as_json()),
+#         parse_mode="HTML"
 #     )
 
 
@@ -100,10 +101,10 @@ async def info(m: Message):
     )
 
 
-@dp.message_handler(ChatType.is_private, text=["QR - ссылка на Бота"])
+@dp.message_handler(ChatType.is_private, text=["QR-ссылка"])
 async def qr(m: Message):
     await m.answer_photo(
-        photo="AgACAgIAAxkBAAIajF7nfZzd3qFJrxCXAgAB3AkcIwEJSwACtKwxG1rQQEst6R9PHqKCxin-HJUuAAMBAAMCAAN4AAN3bAACGgQ",
+        photo="AgACAgIAAxkBAAIEQV7xyOp4PpNtDS5RPHvCfb0nni9SAAIDrzEbWNOQS5YVAAEyn-HziZ2L5pEuAAMBAAMCAANtAAOpewMAARoE",
         caption=r"https://t.me/g35_robot",
         parse_mode="HTML"
     )
@@ -156,7 +157,7 @@ async def polls(m: Message):
         "⚠️ ВНИМАНИЕ. Далее идёт блок опросов для пациентов c Рассеянным склерозом \n\n"
         "Если болеете не вы, а ваш близкий, то допускается голосование от его лица. \n\n"
         "Вы всегда можете отменить свой голос и переголосовать заново\n\n\n"
-        "Для перехода к началу опросов нажмите 'Вперед >>'",
+        "Для перехода к началу опросов нажмите 'Вперед ▶'",
         reply_markup=keyboards.polls_navigation()
     )
 
@@ -225,13 +226,13 @@ async def proc_location(m: Message):
     )
 
 
-@dp.message_handler(content_types=['contact'])
+@dp.message_handler(ChatType.is_private, content_types=['contact'])
 async def contact_proc(m: Message):
     users_table = AioSQLiteWrapper("g35.sqlite", table_name="users")
     await users_table.save_phone(m.from_user.id, m.contact.phone_number)
 
 
-@dp.message_handler(ChatType.is_private, text=["Вперед >>"])
+@dp.message_handler(ChatType.is_private, text=["Вперед ▶️"])
 async def info(m: Message):
     users_table = AioSQLiteWrapper("g35.sqlite", "users")
     current_polls_page = await users_table.get_user_polls_page(m.from_user.id)
@@ -242,11 +243,12 @@ async def info(m: Message):
         await users_table.set_user_polls_page(m.from_user.id, next_page)
     elif next_page > len(polls_id):
         await m.answer(
-            "Конец блока опросов"
+            "♦️ Конец блока опросов. \n\n"
+            "Спасибо за участие 😉"
         )
 
 
-@dp.message_handler(ChatType.is_private, text=["<< Назад"])
+@dp.message_handler(ChatType.is_private, text=["◀️ Назад"])
 async def info(m: Message):
     users_table = AioSQLiteWrapper("g35.sqlite", "users")
     current_polls_page = await users_table.get_user_polls_page(m.from_user.id)
@@ -284,20 +286,21 @@ async def process_msg_template(m: Message, state: FSMContext):
     await state.finish()
 
 
-@dp.message_handler(commands=['g35'])
+@dp.message_handler(ChatType.is_private, commands=['g35'])
 async def say_to_g35(m: Message):
     """
     Сказать от имени бота в G35
     """
-    text = utils.edit_cmd(m.text)
-    await bot.send_message(
-        config.matests,
-        text
-    )
-    await bot.send_animation(
-        chat_id=config.matests,
-        animation="AAMCAgADGQEAAhqvXueMLoIs36dZrmU_cI1hrYoRBoQAAkMGAAKdpiFJRp2_h30a5ePbScoOAAQBAAdtAAO2fAACGgQ"
-    )
+    if m.from_user.id in config.admins:
+        text = utils.edit_cmd(m.text)
+        await bot.send_message(
+            config.matests,
+            text
+        )
+        await bot.send_animation(
+            chat_id=config.matests,
+            animation="AAMCAgADGQEAAhqvXueMLoIs36dZrmU_cI1hrYoRBoQAAkMGAAKdpiFJRp2_h30a5ePbScoOAAQBAAdtAAO2fAACGgQ"
+        )
 
 
 @dp.message_handler(commands=['myid'])
@@ -305,16 +308,16 @@ async def my_id(m: Message):
     """
     Отправляет пользователю его ID в телеграме
     """
-    await m.answer(
+    await m.reply(
         "Ваш ID 👇 \n\n"
         f"`{m.from_user.id}`"
     )
 
 
-@dp.message_handler(content_types=['animation'])
+@dp.message_handler(ChatType.is_private, content_types=['animation'])
 async def anima(m: Message):
     """
-    Возвращает админу бота ID отправленного фото.
+    Возвращает админу бота ID отправленной анимации.
     """
     if m.from_user.id in config.admins:
         await m.answer(
@@ -323,7 +326,7 @@ async def anima(m: Message):
         )
 
 
-@dp.message_handler(content_types=['photo'])
+@dp.message_handler(ChatType.is_private, content_types=['photo'])
 async def get_photo_id(m: Message):
     """
     Возвращает админу бота ID отправленного фото.
