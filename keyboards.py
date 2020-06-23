@@ -27,11 +27,13 @@ def msc():
 
 
 def about_bot():
-    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add(
-        KeyboardButton("Инструкция"),
-        KeyboardButton("Исходный код"),
-        KeyboardButton("QR-ссылка"),
+        KeyboardButton("📃 Инструкция")
+    ).add(
+        KeyboardButton("👨‍💻 Исходный код"),
+        KeyboardButton("👾 QR-ссылка")
+    ).add(
         KeyboardButton("👑 Главное меню")
     )
     return markup

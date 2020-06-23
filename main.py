@@ -69,7 +69,6 @@ async def main_menu(m: Message):
         print("Добавлен новый пользователь")
 
 
-
 @dp.message_handler(ChatType.is_private, commands=['start'])
 async def start(m: Message):
     await main_menu(m)
@@ -101,7 +100,14 @@ async def info(m: Message):
     )
 
 
-@dp.message_handler(ChatType.is_private, text=["QR-ссылка"])
+@dp.message_handler(text=["📃 Инструкция"])
+async def instructions(m: Message):
+    await m.answer(
+        "Раздел находится в разработке"
+    )
+
+
+@dp.message_handler(ChatType.is_private, text=["👾 QR-ссылка"])
 async def qr(m: Message):
     await m.answer_photo(
         photo="AgACAgIAAxkBAAIEQV7xyOp4PpNtDS5RPHvCfb0nni9SAAIDrzEbWNOQS5YVAAEyn-HziZ2L5pEuAAMBAAMCAANtAAOpewMAARoE",
@@ -110,7 +116,7 @@ async def qr(m: Message):
     )
 
 
-@dp.message_handler(ChatType.is_private, text=["Исходный код"])
+@dp.message_handler(ChatType.is_private, text=["👨‍💻 Исходный код"])
 async def source_code(m: Message):
     await m.answer(
         "https://github.com/medaba/MS-Bot"
@@ -154,10 +160,10 @@ async def rehab(m: Message):
 @dp.message_handler(ChatType.is_private, text=['📜 Опросы'])
 async def polls(m: Message):
     await m.answer(
-        "⚠️ ВНИМАНИЕ. Далее идёт блок опросов для пациентов c Рассеянным склерозом \n\n"
-        "Если болеете не вы, а ваш близкий, то допускается голосование от его лица. \n\n"
-        "Вы всегда можете отменить свой голос и переголосовать заново\n\n\n"
-        "Для перехода к началу опросов нажмите 'Вперед ▶'",
+        "⚠️ Блок опросов для пациентов c Рассеянным склерозом \n\n"
+        "🔸 Если болеете не вы, а ваш близкий, то допускается голосование от его лица. \n\n"
+        "🔹 Вы всегда можете отменить свой голос и переголосовать заново\n\n\n"
+        "*Начать:*  'Вперед ▶'",
         reply_markup=keyboards.polls_navigation()
     )
 
