@@ -42,7 +42,7 @@ async def send_report_to_admin(admin_id, mailing_report):
     await bot.send_message(
         admin_id,
         f"Рассылка завершена за {mailing_report['end_time']} секунд\n\n"
-        f"Всего попыток: {mailing_report['count']}"
+        f"Всего попыток: {mailing_report['count']}\n"
         f"Успешно отправлено: {mailing_report['ok']}\n"
         f"Неудача: {mailing_report['fail']}"
     )
