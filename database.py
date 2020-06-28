@@ -33,6 +33,9 @@ class AioSQLiteWrapper:
 
 
     async def fetch_one(self, user_id):
+        """
+        Получить строку по user_id
+        """
         async with aiosqlite.connect(self.db_path) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute(f"SELECT * FROM {self.table_name} WHERE user_id = {user_id}") as cursor:
@@ -43,6 +46,11 @@ class AioSQLiteWrapper:
     async def fetch_all(self):
         async with aiosqlite.connect(self.db_path) as db:
             return await db.execute_fetchall(f"""SELECT * FROM {self.table_name}""")
+
+
+    async def fetch_all_active_users(self):
+        async with aiosqlite.connect(self.db_path) as db:
+            return await db.execute_fetchall(f"""SELECT * FROM users WHERE active=1""")
 
 
     async def fetch_all_ids(self):
@@ -111,5 +119,5 @@ class AioSQLiteWrapper:
 
 if __name__ == '__main__':
     users_table = AioSQLiteWrapper("g35.sqlite", "users")
-    ids = asyncio.run(users_table.fetch_all_ids())
-    print(ids[0][0])
+    ids = asyncio.run(users_table.fetch_all_active_users())
+    print(ids)

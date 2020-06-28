@@ -32,23 +32,22 @@ async def start_mailing(admin_id, users_ids, text):
     mailing_report["end_time"] = end_time
 
     await send_report_to_admin(admin_id, mailing_report)
-
+    await process_inactive_users(failed_users_ids)
 
 
 async def send_report_to_admin(admin_id, mailing_report):
     """
-    Отправка отчета админу о проведенной рассылке
+    Отправка админу отчета о проведенной рассылке
     """
     await bot.send_message(
         admin_id,
         f"Рассылка завершена за {mailing_report['end_time']} секунд\n\n"
         f"Всего попыток: {mailing_report['count']}\n"
         f"Успешно отправлено: {mailing_report['ok']}\n"
-        f"Неудача: {mailing_report['fail']}"
-    )
+        f"Неудача: {mailing_report['fail']}")
 
 
-async def inactive_users(failed_users_ids):
+async def process_inactive_users(failed_users_ids):
     """
     Принимает список user_id пользователей, которым не получилось отправить сообщение
     и устанавливает им в БД active=0
