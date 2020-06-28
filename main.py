@@ -56,14 +56,13 @@ async def main_menu(m: Message):
         reply_markup=keyboards.main_menu()
     )
 
-    # Добавление юзера, или обнуление страниц.
-    # Включение статуса active
     users_table = AioSQLiteWrapper("g35.sqlite", "users")
     try:
-        await users_table.fetch_one(m.from_user.id)
-        await users_table.set_user_active(m.from_user.id)
-        await users_table.set_user_polls_page(m.from_user.id, 0)
+        await users_table.fetch_one(m.from_user.id)        # Получить юзера из БД
+        await users_table.set_user_active(m.from_user.id)  # Включение статуса active
+        await users_table.set_user_polls_page(m.from_user.id, 0)  # Обнуление счетчика страниц опросов
     except:
+        # Добавление нового юзера в БД.
         await users_table.add_row("(user_id, first_name, last_name, username)",
                                   f"({m.from_user.id}, '{m.from_user.first_name}', '{m.from_user.last_name}', '{m.from_user.username}')")
         print("Добавлен новый пользователь")
