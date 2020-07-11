@@ -58,17 +58,11 @@ class AioSQLiteWrapper:
             return await db.execute_fetchall(f"""SELECT user_id FROM {self.table_name}""")
 
 
-    async def get_all_users_ids(self) -> list:
+    async def get_all_users_ids(self, all_users) -> list:
         """
         Получить список всех user_id
         """
-        users_ids = []
-        try:
-            all_users = await self.fetch_all()
-            for user in all_users:
-                users_ids.append(user[0])
-        except Exception as e:
-            print(e)
+        users_ids = [x[0] for x in all_users]
         return users_ids
 
 

@@ -3,8 +3,6 @@
 import asyncio
 import logging
 
-from geopy.distance import distance
-
 from aiogram import types
 from aiogram.types import Message, ChatType
 from aiogram.types import ReplyKeyboardRemove
@@ -16,6 +14,7 @@ import config
 import utils
 import keyboards
 import mailing
+import check_distance
 from form import Form
 from database import AioSQLiteWrapper
 from polls_ids import polls_id
@@ -52,7 +51,8 @@ async def shutdown(*args):
 
 async def main_menu(m: Message):
     await m.answer(
-        "Главное меню",
+        "🤖 *Вы находитесь в главном меню MS-Bot.* \n\n"
+        ,
         reply_markup=keyboards.main_menu()
     )
 
@@ -94,7 +94,9 @@ async def show_main_menu(m: Message):
 @dp.message_handler(ChatType.is_private, text=['🤖 О Боте'])
 async def info(m: Message):
     await m.answer(
-        "*Подробнее о боте* \n\n",
+        "☘️ *Подробнее о боте* \n\n"
+        "🛠️ Данный бот создан с целью предоставления дополнительной информации и некоторых полезных функций для людей, "
+        "столкнувшихся с рассеянным склерозом.\n\n",
         reply_markup=keyboards.about_bot()
     )
 
@@ -103,6 +105,15 @@ async def info(m: Message):
 async def instructions(m: Message):
     await m.answer(
         "Раздел находится в разработке"
+    )
+
+
+@dp.message_handler(text=["☎️ Контакты"])
+async def contacts(m: Message):
+    await m.answer(
+        "👨‍💻 *Контакты разработчика* \n\n"
+        "*telegram:* @Jimbo_Jango \n"
+        "*mail:* freedaba@protonmail.com \n"
     )
 
 
@@ -159,10 +170,10 @@ async def rehab(m: Message):
 @dp.message_handler(ChatType.is_private, text=['📜 Опросы'])
 async def polls(m: Message):
     await m.answer(
-        "⚠️ Блок опросов для пациентов c Рассеянным склерозом \n\n"
-        "🔸 Если болеете не вы, а ваш близкий, то допускается голосование от его лица. \n\n"
-        "🔹 Вы всегда можете отменить свой голос и переголосовать заново\n\n\n"
-        "*Начать:*  'Вперед ▶'",
+        "*Блок опросов для людей c Рассеянным склерозом* \n\n"
+        "🚸 Если болеете не вы, а ваш близкий, то допускается голосование от его лица. \n\n"
+        "⚠️ Вы всегда можете отменить свой голос и переголосовать заново.\n\n\n"
+        "Вперед ▶",
         reply_markup=keyboards.polls_navigation()
     )
 
@@ -170,7 +181,7 @@ async def polls(m: Message):
 @dp.message_handler(ChatType.is_private, text=['🧑‍⚕️ РС-Центры'])
 async def main_msc(m: Message):
     await m.answer(
-        "Данное меню поможет вам найти ближайший медицинский центр",
+        "Данное меню поможет вам найти РС-Центр",
         reply_markup=keyboards.msc()
     )
 
@@ -184,8 +195,6 @@ async def show_all_msc(m: Message):
     )
 
 
-# TODO переписать ф-ю. Вынести вычисление расстояния в отдельный модуль
-
 @dp.message_handler(ChatType.is_private, content_types=['location'])
 async def proc_location(m: Message):
     user_coords = (m.location.latitude, m.location.longitude)  # координаты пользователя
@@ -195,40 +204,26 @@ async def proc_location(m: Message):
     except Exception as e:
         print(e)
 
-    mscenter_table = AioSQLiteWrapper("g35.sqlite", "mscenter")
-    all_msc = await mscenter_table.fetch_all()   # список кортежей рс-центров из БД
-    best_distance = 1000000                      # "максимально невозможное" расстояние от юзера до рсц
-    best_address = None
-
-    for msc in all_msc:
-        msc_coords = (msc[4], msc[5])            # координаты текущего рс-центра
-        dist = distance(user_coords, msc_coords) # получение расстояния от юзера, до рс-центра
-
-        if dist < best_distance:
-            best_distance = dist
-            best_address = msc
+    best_distance, best_address = await check_distance.calculate(user_coords)
 
     await bot.delete_message(
         m.chat.id,
-        m.message_id
-    )
+        m.message_id)
 
     await bot.send_venue(
         m.chat.id,
         best_address[4],
         best_address[5],
         best_address[3],
-        best_address[2]
-    )
+        best_address[2])
 
     await asyncio.sleep(1)
 
     answer = ", ".join(best_address[:4])
     await m.answer(
         "Ближайший от вас Центр Рассеянного Cклероза находится по адресу: \n\n"
-        f"{answer} \n"
-        f"Расстояние: {round(best_distance.km, 1)} км."
-    )
+        f"🔸 {answer} \n"
+        f"🔹 Расстояние: {round(best_distance.km, 1)} км.")
 
 
 @dp.message_handler(ChatType.is_private, content_types=['contact'])
@@ -248,8 +243,7 @@ async def info(m: Message):
         await users_table.set_user_polls_page(m.from_user.id, next_page)
     elif next_page > len(polls_id):
         await m.answer(
-            "♦️ Конец блока опросов. \n\n"
-            "Спасибо за участие 😉"
+            "♦️ Конец блока опросов. Спасибо за участие 🙏"
         )
 
 
@@ -262,6 +256,10 @@ async def info(m: Message):
         poll_id = polls_id[previous_page]
         await bot.forward_message(m.from_user.id, config.main_admin, poll_id)
         await users_table.set_user_polls_page(m.from_user.id, previous_page)
+    elif previous_page <= 0:
+        users_table = AioSQLiteWrapper("g35.sqlite", "users")
+        await users_table.set_user_polls_page(m.from_user.id, 0)
+        await polls(m)
 
 
 @dp.message_handler(ChatType.is_private, text=["⏮️ Начало опросов"])
@@ -274,17 +272,18 @@ async def info(m: Message):
 @dp.message_handler(ChatType.is_private, commands=['mailing'])
 async def start_mailing(m: Message):
     if m.from_user.id in config.admins:
-        await Form.message_template.set()
         await m.answer(
             "Отправьте мне сообщение для рассылки",
             reply_markup=ReplyKeyboardRemove()
         )
+        await Form.message_template.set()
 
 
 @dp.message_handler(state=Form.message_template)
 async def process_msg_template(m: Message, state: FSMContext):
     users_table = AioSQLiteWrapper("g35.sqlite", "users")
-    all_users_ids = await users_table.get_all_users_ids()
+    all_users = await users_table.fetch_all_active_users()
+    all_users_ids = await users_table.get_all_users_ids(all_users)
     await mailing.start_mailing(admin_id=m.from_user.id,
                                 users_ids=all_users_ids,
                                 text=m.text)
@@ -346,7 +345,6 @@ async def get_photo_id(m: Message):
 async def i_am_alive(sleep_for=28800):
     """
     Периодическая ф-я.
-    Добавляется в loop и запускается каждые 'sleep_for' секунд.
     Отправляет админу сообщение о своей работоспособности каждые 'sleep_for' секунд.
     """
     while True:

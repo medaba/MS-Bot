@@ -8,10 +8,10 @@ def main_menu():
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(
         KeyboardButton("🤖 О Боте"),
-        KeyboardButton("🔗 Ссылки"),
         KeyboardButton("📜 Опросы"),
-        KeyboardButton("♥️ Реабилитация"),
-        KeyboardButton("🧑‍⚕️ РС-Центры")
+        KeyboardButton("🔗 Ссылки"),
+        KeyboardButton("🧑‍⚕️ РС-Центры"),
+        KeyboardButton("♥️ Реабилитация")
     )
     return markup
 
@@ -29,6 +29,7 @@ def msc():
 def about_bot():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add(
+        KeyboardButton("☎️ Контакты"),
         KeyboardButton("📃 Инструкция")
     ).add(
         KeyboardButton("👨‍💻 Исходный код"),
