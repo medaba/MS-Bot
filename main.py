@@ -65,7 +65,8 @@ async def main_menu(m: Message):
         # Добавление нового юзера в БД.
         await users_table.add_row("(user_id, first_name, last_name, username)",
                                   f"({m.from_user.id}, '{m.from_user.first_name}', '{m.from_user.last_name}', '{m.from_user.username}')")
-        print("Добавлен новый пользователь")
+        print(f"Добавлен пользователь: {m.from_user.first_name}, {m.from_user.id}.")
+        logger.info(f"Добавлен пользователь: {m.from_user.first_name}, {m.from_user.id}.")
 
 
 @dp.message_handler(ChatType.is_private, commands=['start'])
@@ -109,11 +110,13 @@ async def instructions(m: Message):
 
 
 @dp.message_handler(text=["☎️ Контакты"])
-async def contacts(m: Message):
+async def contact(m: Message):
     await m.answer(
-        "👨‍💻 *Контакты разработчика* \n\n"
-        "*telegram:* @Jimbo_Jango \n"
-        "*mail:* freedaba@protonmail.com \n"
+        "👨‍💻 <b>Контакты разработчика</b> \n\n"
+        "<b>telegram:</b> @Jimmy_Jango \n"
+        "<b>mail:</b> freedaba@protonmail.com \n",
+        parse_mode="HTML",
+        reply_markup=keyboards.contacts()
     )
 
 
@@ -121,7 +124,7 @@ async def contacts(m: Message):
 async def qr(m: Message):
     await m.answer_photo(
         photo="AgACAgIAAxkBAAIEQV7xyOp4PpNtDS5RPHvCfb0nni9SAAIDrzEbWNOQS5YVAAEyn-HziZ2L5pEuAAMBAAMCAANtAAOpewMAARoE",
-        caption=r"https://t.me/g35_robot",
+        caption=r"🟠 https://t.me/g35_robot",
         parse_mode="HTML"
     )
 
@@ -129,7 +132,10 @@ async def qr(m: Message):
 @dp.message_handler(ChatType.is_private, text=["👨‍💻 Исходный код"])
 async def source_code(m: Message):
     await m.answer(
-        "https://github.com/medaba/MS-Bot"
+        "*Исходный код проекта:* \n\n"
+        "https://github.com/medaba/MS-Bot",
+        reply_markup=keyboards.source_code(),
+        disable_web_page_preview=True
     )
 
 
@@ -204,7 +210,7 @@ async def proc_location(m: Message):
     except Exception as e:
         print(e)
 
-    best_distance, best_address = await check_distance.calculate(user_coords)
+    best_distance, best_address = await check_distance.calculate_distance(user_coords)
 
     await bot.delete_message(
         m.chat.id,
@@ -222,8 +228,8 @@ async def proc_location(m: Message):
     answer = ", ".join(best_address[:4])
     await m.answer(
         "Ближайший от вас Центр Рассеянного Cклероза находится по адресу: \n\n"
-        f"🔸 {answer} \n"
-        f"🔹 Расстояние: {round(best_distance.km, 1)} км.")
+        f"🔸 {answer} \n\n"
+        f"🚁 Расстояние: {round(best_distance.km, 1)} км.")
 
 
 @dp.message_handler(ChatType.is_private, content_types=['contact'])
@@ -243,7 +249,7 @@ async def info(m: Message):
         await users_table.set_user_polls_page(m.from_user.id, next_page)
     elif next_page > len(polls_id):
         await m.answer(
-            "♦️ Конец блока опросов. Спасибо за участие 🙏"
+            "❤️️ Конец блока опросов. Спасибо за участие 🙏"
         )
 
 

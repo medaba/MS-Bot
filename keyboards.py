@@ -16,6 +16,20 @@ def main_menu():
     return markup
 
 
+def contacts():
+    markup = InlineKeyboardMarkup(resize_keyboard=True)
+    markup.add(
+        InlineKeyboardButton(text="✅ Разработчику на витамины", callback_data="D3")
+    )
+    return markup
+
+
+def source_code():
+    markup = InlineKeyboardMarkup(row_width=1)
+    markup.add(InlineKeyboardButton(text="👨‍💻 GitHub", url="https://github.com/medaba/MS-Bot"))
+    return markup
+
+
 def msc():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add(

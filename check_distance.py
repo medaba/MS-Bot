@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from database import AioSQLiteWrapper
 from geopy.distance import distance
 
+from database import AioSQLiteWrapper
 
-async def calculate(user_coords):
+
+async def calculate_distance(user_coords):
     """
     Принимает координаты пользователя,
     Возвращает Дистанцию до ближайшего РСЦ из БД и его адрес.

@@ -7,6 +7,8 @@ import asyncio
 
 class AioSQLiteWrapper:
     """Класс для работы с aiosqlite
+       Принимает путь в файлу БД и имя таблицы.
+       Возвращает объект для работы с этой таблицей.
     """
 
     def __init__(self, db_path, table_name):
@@ -103,11 +105,6 @@ class AioSQLiteWrapper:
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute(f'UPDATE {self.table_name} SET polls_page = {polls_page} WHERE user_id = {user_id}')
             await db.commit()
-
-
-    async def drop_table(self):
-        async with aiosqlite.connect(self.db_path) as db:
-            await db.execute(f"""DROP TABLE IF EXISTS {self.table_name}""")
 
 
 
