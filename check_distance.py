@@ -8,7 +8,7 @@ from database import AioSQLiteWrapper
 async def calculate_distance(user_coords):
     """
     Принимает координаты пользователя,
-    Возвращает Дистанцию до ближайшего РСЦ из БД и его адрес.
+    Возвращает Дистанцию от него до ближайшего РСЦ из БД.
     """
     mscenter_table = AioSQLiteWrapper("g35.sqlite", "mscenter")
     all_msc = await mscenter_table.fetch_all()  # список кортежей рс-центров из БД
