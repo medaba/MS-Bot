@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import ujson as json
 
 from aiogram import types
 from aiogram.types import Message, ChatType
@@ -51,15 +52,14 @@ async def shutdown(*args):
 
 async def main_menu(m: Message):
     await m.answer(
-        "🤖 *Вы находитесь в главном меню MS-Bot.* \n\n"
-        ,
+        "🤖 *Вы находитесь в главном меню MS-Bot.* \n\n",
         reply_markup=keyboards.main_menu()
     )
 
     users_table = AioSQLiteWrapper("g35.sqlite", "users")
     try:
-        await users_table.fetch_one(m.from_user.id)        # Получить юзера из БД
-        await users_table.set_user_active(m.from_user.id)  # Включение статуса active
+        await users_table.fetch_user_by_id(m.from_user.id)        # Получить юзера из БД
+        await users_table.set_user_active(m.from_user.id)         # Включение статуса active
         await users_table.set_user_polls_page(m.from_user.id, 0)  # Обнуление счетчика страниц опросов
     except:
         # Добавление нового юзера в БД.
@@ -76,14 +76,11 @@ async def start(m: Message):
 
 # @dp.message_handler(ChatType.is_private, content_types=["any"])
 # async def send_json(m: Message):
-#     print("ok")
 #     print(str(m.as_json()))
-#     # answer = json.dumps(m, indent=2, ensure_ascii=False)
-#     # print(answer)
 #     await bot.send_message(
 #         m.chat.id,
 #         str(m.as_json()),
-#         parse_mode="HTML"
+#         parse_mode='HTML'
 #     )
 
 
@@ -96,25 +93,34 @@ async def show_main_menu(m: Message):
 async def info(m: Message):
     await m.answer(
         "☘️ *Подробнее о боте* \n\n"
-        "🛠️ Данный бот создан с целью предоставления дополнительной информации и некоторых полезных функций для людей, "
-        "столкнувшихся с рассеянным склерозом.\n\n",
+        "🛠️ Данный бот создан с целью предоставления дополнительной информации и некоторых полезных функций"
+        " для людей, столкнувшихся с рассеянным склерозом.\n\n"
+        "",
         reply_markup=keyboards.about_bot()
     )
 
 
-@dp.message_handler(text=["📃 Инструкция"])
+@dp.message_handler(ChatType.is_private, text=["📃 Инструкция"])
 async def instructions(m: Message):
     await m.answer(
         "Раздел находится в разработке"
     )
 
 
-@dp.message_handler(text=["☎️ Контакты"])
+@dp.message_handler(ChatType.is_private, text=["☎️ Контакты"])
 async def contact(m: Message):
     await m.answer(
         "👨‍💻 <b>Контакты разработчика</b> \n\n"
-        "<b>telegram:</b> @Jimmy_Jango \n"
-        "<b>mail:</b> freedaba@protonmail.com \n",
+        f"<b>telegram:</b> {config.creator} \n",
+        parse_mode="HTML",
+        reply_markup=keyboards.contacts()
+    )
+
+
+@dp.message_handler(ChatType.is_private, text=["✅ Разработчику на витамины"])
+async def donate(m: Message):
+    await m.answer(
+        "Заглушка",
         parse_mode="HTML",
         reply_markup=keyboards.contacts()
     )
@@ -140,17 +146,33 @@ async def source_code(m: Message):
 
 
 @dp.message_handler(ChatType.is_private, text=['🔗 Ссылки'])
-async def links(m: Message):
+async def useful_links(m: Message):
     await m.answer(
-        "*Полезные ссылки* 🍀 \n\n"
-        "*Telegram-каналы*: \n\n"
+        'В этом меню собраны полезные ссылки на различные онлайн-ресурсы о РС, курсы упражнений для реабилитации, ' 
+        'телеграм каналы/группы и т.д.',
+        reply_markup=keyboards.links()
+    )
+
+
+@dp.message_handler(ChatType.is_private, text=['✈️ Телеграм'])
+async def rehab(m: Message):
+    await m.answer(
         "🔸 [Библиотека склерозника](https://t.me/biblioteka_skleroznika), "
         "куда регулярно выкладываются статьи, книги и видео по РС и о здоровье в целом.\n\n"
         "🔸 [Рассеянный склероз](https://t.me/msneurol) - телеграм-энциклопедия по РС.\n\n"
-        "*Прочее*: \n\n"
+        "🔸 [G35](https://t.me/mscler) - канал для общения на темы связанные с РС.\n\n",
+        disable_web_page_preview=True
+    )
+
+
+@dp.message_handler(ChatType.is_private, text=['🌐 Сайты'])
+async def rehab(m: Message):
+    await m.answer(
         "🔸 [Калькулятор EDSS](http://edss.neurol.ru/edss_ru/) - онлайн калькулятор "
         "для оценки степени инвалидизации больных РС. Версия для врачей неврологов.\n\n"
-        "🔸 [МосОРС](http://mosors.ru/) - сайт московского РС-сообщества.\n\n",
+        "🔸 [Школа пациента (YouTube - МосОРС)](https://www.youtube.com/watch?v=FJ6WTcU-f3w&list=PLYhtMe98iobYeKgSScUwxoTKIEz8fA0Gl) - Плейлист.\n\n"
+        "🔸 [МосОРС](http://mosors.ru/) - сайт Московского РС-сообщества.\n\n"
+        "🔸 [neurol.ru](http://neurol.ru/) - сайт Казанского РС-центра.\n\n",
         disable_web_page_preview=True
     )
 
@@ -161,10 +183,10 @@ async def rehab(m: Message):
         "*Упражнения для реабилитации. Курс молодого бойца* ️🤺️\n\n"
         "Упражнения, рекомендуемые при рассеянном склерозе, "
         "позволяют замедлить прогрессирование процесса и заметно улучшить общее состояние. \n\n\n"
-        "🔸 Упражнение с веревкой: "
-        "[Пошаговая инструкция (YouTube)](https://www.youtube.com/watch?v=isWWtIwdiQE)\n\n"
         "🔸 Развитие мелкой моторики пальцев: "
         "[YouTube/ENG](https://www.youtube.com/watch?v=sB4lXUhRfMU&feature=youtu.be)\n\n"
+        "🔸 Упражнение с веревкой: "
+        "[Пошаговая инструкция (YouTube)](https://www.youtube.com/watch?v=isWWtIwdiQE)\n\n"
         "🔸 10 упражнений для стоп: [сайт/текст с картинками](https://mednew.site/sport/10-uprazhnenij-dlya-stop)\n\n"
         "🔸 Упражнения на координацию из программы подготовки летчиков: [видео](https://t.me/mscler/39573)\n\n"
         "🔸 Курс упражнений для вестибулярного аппарата: "
@@ -177,9 +199,9 @@ async def rehab(m: Message):
 async def polls(m: Message):
     await m.answer(
         "*Блок опросов для людей c Рассеянным склерозом* \n\n"
-        "🚸 Если болеете не вы, а ваш близкий, то допускается голосование от его лица. \n\n"
+        "Если болеете не вы, а ваш близкий, то допускается голосование от его лица. \n\n"
         "⚠️ Вы всегда можете отменить свой голос и переголосовать заново.\n\n\n"
-        "Вперед ▶",
+        "Чтобы начать нажмите кнопку 'Вперед'",
         reply_markup=keyboards.polls_navigation()
     )
 
@@ -245,7 +267,7 @@ async def info(m: Message):
     next_page = current_polls_page + 1
     if next_page <= len(polls_id):
         poll_id = polls_id[next_page]
-        await bot.forward_message(m.from_user.id, config.main_admin, poll_id)
+        await bot.forward_message(m.from_user.id, 698425366, poll_id)
         await users_table.set_user_polls_page(m.from_user.id, next_page)
     elif next_page > len(polls_id):
         await m.answer(
@@ -260,7 +282,7 @@ async def info(m: Message):
     previous_page = current_polls_page - 1
     if previous_page > 0:
         poll_id = polls_id[previous_page]
-        await bot.forward_message(m.from_user.id, config.main_admin, poll_id)
+        await bot.forward_message(m.from_user.id, 698425366, poll_id)
         await users_table.set_user_polls_page(m.from_user.id, previous_page)
     elif previous_page <= 0:
         users_table = AioSQLiteWrapper("g35.sqlite", "users")

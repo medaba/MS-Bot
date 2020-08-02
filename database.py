@@ -34,9 +34,9 @@ class AioSQLiteWrapper:
             await db.commit()
 
 
-    async def fetch_one(self, user_id):
+    async def fetch_user_by_id(self, user_id):
         """
-        Получить строку по user_id
+        Получить данные юзера по user_id
         """
         async with aiosqlite.connect(self.db_path) as db:
             db.row_factory = aiosqlite.Row
