@@ -346,18 +346,6 @@ async def my_id(m: Message):
     )
 
 
-@dp.message_handler(ChatType.is_private, content_types=['animation'])
-async def anima(m: Message):
-    """
-    Возвращает админу бота ID отправленной анимации.
-    """
-    if m.from_user.id in config.admins:
-        await m.answer(
-            f"`{m}`",
-            parse_mode=None
-        )
-
-
 @dp.message_handler(ChatType.is_private, content_types=['photo'])
 async def get_photo_id(m: Message):
     """
