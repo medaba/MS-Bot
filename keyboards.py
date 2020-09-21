@@ -8,9 +8,9 @@ def main_menu():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
     markup.add(
         KeyboardButton("☎️ Контакты"),
+        KeyboardButton("🤖 О Боте"),
         KeyboardButton("🧑‍⚕️ РС-Центры")
     ).add(
-        KeyboardButton("🤖 О Боте"),
         KeyboardButton("🔗 Ссылки"),
         KeyboardButton("📜 Опросы")
     )
@@ -56,11 +56,20 @@ def msc():
     return markup
 
 
+def canceling():
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+    markup.add(
+        KeyboardButton("Отмена"),
+        KeyboardButton("👑 Главное меню")
+    )
+    return markup
+
+
 def about_bot():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    # markup.add(
+    #     KeyboardButton("📃 Инструкция"))
     markup.add(
-        KeyboardButton("📃 Инструкция")
-    ).add(
         KeyboardButton("👨‍💻 Исходный код"),
         KeyboardButton("👾 QR-ссылка")
     ).add(
@@ -75,6 +84,6 @@ def polls_navigation():
         KeyboardButton("◀️ Назад"),
         KeyboardButton("Вперед ▶️")
     )
-    markup.add(KeyboardButton("⏮️ Начало опросов"))
-    markup.add(KeyboardButton("👑 Главное меню"))
+    markup.add(
+        KeyboardButton("👑 Главное меню"))
     return markup

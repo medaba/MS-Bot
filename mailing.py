@@ -8,6 +8,10 @@ from database import AioSQLiteWrapper
 
 
 async def start_mailing(admin_id, users_ids, text):
+    if text == 'Отмена':
+        await bot.send_message(admin_id, 'Рассылка отменена')
+        return
+
     failed_users_ids = []
     mailing_report = {"end_time": None, "count": 0, "ok": 0, "fail": 0}
 

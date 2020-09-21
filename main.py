@@ -15,7 +15,7 @@ import config
 import utils
 import keyboards
 import mailing
-import check_distance
+from check_distance import calculate_distance
 from form import Form
 from database import AioSQLiteWrapper
 from polls_ids import polls_id
@@ -52,7 +52,7 @@ async def shutdown(*args):
 
 async def main_menu(m: Message):
     await m.answer(
-        "🤖 *Вы находитесь в главном меню MS-Bot.* \n\n",
+        "🤖 *Вы находитесь в главном меню.* \n\n",
         reply_markup=keyboards.main_menu()
     )
 
@@ -110,17 +110,19 @@ async def instructions(m: Message):
 @dp.message_handler(ChatType.is_private, text=["☎️ Контакты"])
 async def contact(m: Message):
     await m.answer(
-        "👨‍💻 <b>Контакты разработчика</b> \n\n"
-        f"<b>telegram:</b> {config.creator} \n",
-        parse_mode="HTML",
-        reply_markup=keyboards.contacts()
+        "👨‍💻 *Контакты разработчика* \n\n"
+        f"*Telegram:* [BOTSFAM](https://t.me/alotofbots) \n",
+        parse_mode="Markdown",
+        reply_markup=keyboards.contacts(),
+        disable_web_page_preview=True
     )
 
 
 @dp.message_handler(ChatType.is_private, text=["✅ Разработчику на витамины"])
 async def donate(m: Message):
     await m.answer(
-        "Заглушка",
+        "QIWI (перевод по никнейму): \nhttps://qiwi.com/n/SUNNYDAY\n\n"
+        "AdvCash: \nRUB: R 8126 7012 8613 \nUSD: U 9626 6206 4947",
         parse_mode="HTML",
         reply_markup=keyboards.contacts()
     )
@@ -157,8 +159,8 @@ async def useful_links(m: Message):
 @dp.message_handler(ChatType.is_private, text=['✈️ Телеграм'])
 async def rehab(m: Message):
     await m.answer(
-        "🔸 [Библиотека склерозника](https://t.me/biblioteka_skleroznika), "
-        "куда регулярно выкладываются статьи, книги и видео по РС и о здоровье в целом.\n\n"
+        "🔸 [Библиотека склерозника](https://t.me/biblioteka_skleroznika) - "
+        "статьи, книги, видео про РС и о здоровье в целом.\n\n"
         "🔸 [Рассеянный склероз](https://t.me/msneurol) - телеграм-энциклопедия по РС.\n\n"
         "🔸 [G35](https://t.me/mscler) - канал для общения на темы связанные с РС.\n\n",
         disable_web_page_preview=True
@@ -170,7 +172,6 @@ async def rehab(m: Message):
     await m.answer(
         "🔸 [Калькулятор EDSS](http://edss.neurol.ru/edss_ru/) - онлайн калькулятор "
         "для оценки степени инвалидизации больных РС. Версия для врачей неврологов.\n\n"
-        "🔸 [Школа пациента (YouTube - МосОРС)](https://www.youtube.com/watch?v=FJ6WTcU-f3w&list=PLYhtMe98iobYeKgSScUwxoTKIEz8fA0Gl) - Плейлист.\n\n"
         "🔸 [МосОРС](http://mosors.ru/) - сайт Московского РС-сообщества.\n\n"
         "🔸 [neurol.ru](http://neurol.ru/) - сайт Казанского РС-центра.\n\n",
         disable_web_page_preview=True
@@ -183,14 +184,19 @@ async def rehab(m: Message):
         "*Упражнения для реабилитации. Курс молодого бойца* ️🤺️\n\n"
         "Упражнения, рекомендуемые при рассеянном склерозе, "
         "позволяют замедлить прогрессирование процесса и заметно улучшить общее состояние. \n\n\n"
+        "🔸 Комплекс домашних упражнений для бодрости и поднятия боевого духа: "
+        "[YouTube/Плейлист](https://www.youtube.com/watch?v=A1wB3qlhzRI&list=PLq3gpRvKC5jbuzKD61X6YIfBdKcGO30EJ)\n\n"
+        # "🔸 Подборка 'разминочных' упражнений: "
+        # "[YouTube](https://www.youtube.com/watch?v=HC15GNT9FkY)\n\n"
         "🔸 Развитие мелкой моторики пальцев: "
         "[YouTube/ENG](https://www.youtube.com/watch?v=sB4lXUhRfMU&feature=youtu.be)\n\n"
         "🔸 Упражнение с веревкой: "
         "[Пошаговая инструкция (YouTube)](https://www.youtube.com/watch?v=isWWtIwdiQE)\n\n"
         "🔸 10 упражнений для стоп: [сайт/текст с картинками](https://mednew.site/sport/10-uprazhnenij-dlya-stop)\n\n"
         "🔸 Упражнения на координацию из программы подготовки летчиков: [видео](https://t.me/mscler/39573)\n\n"
-        "🔸 Курс упражнений для вестибулярного аппарата: "
-        "[сайт/текст с картинками](https://vladmedicina.ru/persons/p52698.htm)\n\n",
+        "🔸 Упражнения для вестибулярного аппарата: "
+        "[сайт/текст с картинками](https://vladmedicina.ru/persons/p52698.htm)\n\n"
+        "🔸 [Школа пациента (YouTube - МосОРС)](https://www.youtube.com/watch?v=FJ6WTcU-f3w&list=PLYhtMe98iobYeKgSScUwxoTKIEz8fA0Gl) - YouTube плейлист.\n\n",
         disable_web_page_preview=True
     )
 
@@ -232,7 +238,7 @@ async def proc_location(m: Message):
     except Exception as e:
         print(e)
 
-    best_distance, best_address = await check_distance.calculate_distance(user_coords)
+    best_distance, best_address = await calculate_distance(user_coords)
 
     await bot.delete_message(
         m.chat.id,
@@ -302,13 +308,17 @@ async def start_mailing(m: Message):
     if m.from_user.id in config.admins:
         await m.answer(
             "Отправьте мне сообщение для рассылки",
-            reply_markup=ReplyKeyboardRemove()
+            reply_markup=keyboards.canceling()
         )
         await Form.message_template.set()
 
 
 @dp.message_handler(state=Form.message_template)
 async def process_msg_template(m: Message, state: FSMContext):
+    """
+    Обрабатывает принятый State с сообщением для рассылки и
+    запускает рассылку.
+    """
     users_table = AioSQLiteWrapper("g35.sqlite", "users")
     all_users = await users_table.fetch_all_active_users()
     all_users_ids = await users_table.get_all_users_ids(all_users)
@@ -343,6 +353,16 @@ async def my_id(m: Message):
     await m.reply(
         "Ваш ID 👇 \n\n"
         f"`{m.from_user.id}`"
+    )
+
+
+@dp.message_handler(commands=['creator'])
+async def show_creator(m: Message):
+    """
+    Отправить сообщение с username создателя бота (config.creator)
+    """
+    await m.answer(
+        f'Меня создал {config.creator}'
     )
 
 
