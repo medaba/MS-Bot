@@ -12,7 +12,7 @@ async def calculate_distance(user_coords):
     """
     mscenter_table = AioSQLiteWrapper("g35.sqlite", "mscenter")
     all_msc = await mscenter_table.fetch_all()  # список кортежей рс-центров из БД
-    best_distance = 10 ** 10                    # "максимально невозможное" расстояние от юзера до рсц
+    best_distance = 999999999999999             # "максимально невозможное" расстояние от юзера до рсц
     best_address = None
 
     for msc in all_msc:
