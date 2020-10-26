@@ -23,7 +23,8 @@ async def start_mailing(admin_id, users_ids, text):
             await bot.send_message(
                 user_id,
                 text,
-                disable_web_page_preview=True
+                disable_web_page_preview=True,
+                disable_notification=True
             )
             mailing_report['ok'] += 1
         except:

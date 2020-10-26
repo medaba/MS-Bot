@@ -7,12 +7,11 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 def main_menu():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
     markup.add(
-        KeyboardButton("📜 Опросы"),
-        KeyboardButton("🔗 Ссылки"),
-
-    ).add(
         KeyboardButton("🤖 О Боте"),
-        KeyboardButton("🧑‍⚕️ РС-Центры")
+        KeyboardButton('💻 Ссылки'),
+    ).add(
+        KeyboardButton("🧑‍⚕️ РС-Центры"),
+        KeyboardButton("📜 Опросы")
     )
     return markup
 
@@ -21,9 +20,9 @@ def links():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add(
         KeyboardButton("✈️ Телеграм"),
-        KeyboardButton("🌐 Сайты")
-    ).add(
-        ("♥️ Реабилитация")
+        KeyboardButton("🌐 Сайты"),
+        KeyboardButton("♥️ Реабилитация"),
+        KeyboardButton('🗂️ Разное')
     ).add(
         KeyboardButton("👑 Главное меню")
     )
@@ -64,10 +63,16 @@ def canceling():
     return markup
 
 
+def message_for_admin_yes_no():
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    markup.add(
+        KeyboardButton("✅ Отправить"),
+        KeyboardButton("Отмена 🚫")
+    )
+    return markup
+
 def about_bot():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    # markup.add(
-    #     KeyboardButton("📃 Инструкция"))
     markup.add(
         KeyboardButton("☎️ Контакты"),
         KeyboardButton("⚠️ Дисклеймер"),

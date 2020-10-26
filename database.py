@@ -81,6 +81,19 @@ class AioSQLiteWrapper:
             await db.commit()
 
 
+    async def save_last_msg_id(self, user_id, message_id):
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute(f'UPDATE {self.table_name} SET msg_id = {message_id} WHERE user_id = {user_id}')
+            await db.commit()
+
+
+    async def get_saved_message_id(self, user_id):
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(f"SELECT * FROM {self.table_name} WHERE user_id = {user_id}") as cursor:
+                row = await cursor.fetchone()
+                return row['msg_id']
+
     async def set_user_active(self, user_id):
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute(f'UPDATE {self.table_name} SET active = 1 WHERE user_id = {user_id}')
