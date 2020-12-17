@@ -58,7 +58,7 @@ async def process_inactive_users(failed_users_ids):
     и устанавливает им в БД active=0
     """
     try:
-        users_table = AioSQLiteWrapper("db.db", "users")
+        users_table = AioSQLiteWrapper("g35.sqlite", "users")
         for user in failed_users_ids:
             await users_table.set_user_inactive(user)
     except Exception as e:

@@ -129,9 +129,12 @@ async def contact(m: Message):
 @dp.message_handler(ChatType.is_private, text=["✅ Разработчику на витамины"])
 async def donate(m: Message):
     await m.answer(
-        "*Карта* (QIWI/VISA): `4693 9575 5871 1698` \n\n"
-        "*QIWI* перевод по никнейму: https://qiwi.com/n/SUNNYDAY\n\n"
-        "*Yandex.Деньги:* `410012455548219`",
+        "*QIWI:* https://qiwi.com/n/SUNNYDAY\n\n"
+        "*Yandex.Деньги:* `410012455548219`\n\n"
+        "*Bitcoin:* `bc1qy8h9gnd0ktjwl5zc9q34j00agafzkt8s7xgunh`\n\n"
+        "*Litecoin:* `ltc1qqzu9c57f6fyv2t6etsrfv2lr9f26rvhmfdhrv3`\n\n"
+        "*Etherium:* `0x052bad80eca98eBA956c488b907f9C751b9d5129`\n\n"
+        ,
         reply_markup=keyboards.contacts()
     )
 
@@ -174,7 +177,7 @@ async def rehab(m: Message):
         "🔸 [Библиотека склерозника](https://t.me/biblioteka_skleroznika) - "
         "статьи, книги, видео про РС и о здоровье в целом.\n\n"
         "🔸 [Рассеянный склероз](https://t.me/msneurol) - телеграм-энциклопедия по РС.\n\n"
-        "🔸 [G35](https://t.me/mscler) - канал для общения на темы связанные с РС.\n\n",
+        ,
         disable_web_page_preview=True
     )
 
@@ -185,8 +188,7 @@ async def rehab(m: Message):
         "🔸 [МосОРС](http://mosors.ru/) - сайт Московского РС-сообщества.\n\n"
         "🔸 [SCLEROS.RU](https://scleros.ru/) - информационно-образовательный портал. Новости, форум и т.д.\n\n"
         "🔸 [ОООИ-БРС](https://форум.ооои-брс.рф/) - форум для пациентов с рассеянным склерозом.\n\n"
-        "🔸 [G35.CLUB](https://g35.club/) - обзоры зарубежных статей из различных рецензируемых мед. журналов.\n\n"
-        "🔸 [NEUROL.RU](http://neurol.ru/) - сайт Казанского РС-центра.\n\n",
+        "🔸 [G35.CLUB](https://g35.club/) - обзоры зарубежных статей из различных рецензируемых мед. журналов.\n\n",
         disable_web_page_preview=True
     )
 
@@ -239,7 +241,7 @@ async def main_msc(m: Message):
     await m.answer(
         "🏥 Данное меню поможет вам найти РС-Центр в вашем городе (РФ) \n\n"
         "Если вы обнаружили, что в базе не хватает какого-либо *специализированного* РС-центра, "
-        "который *ведет прием пациентов по ОМС*, смело отправляйте название и адрес прямо в этот чат.",
+        "*который ведет прием пациентов по ОМС*, смело отправляйте название и адрес прямо в этот чат.",
         reply_markup=keyboards.msc()
     )
 
@@ -248,8 +250,7 @@ async def main_msc(m: Message):
 async def show_all_msc(m: Message):
     await m.answer(
         "*Список Центров Рассеянного Склероза* \n\n"
-        '[telegra.ph](https://telegra.ph/Spisok-RS-Centrov-06-08-19) | '
-        '[зеркало](https://tgraph.io/Spisok-RS-Centrov-06-08-19)'
+        '[TELEGRA.PH](https://telegra.ph/Spisok-RS-Centrov-11-03) | '
     )
 
 
@@ -320,11 +321,11 @@ async def info(m: Message):
         await polls(m)
 
 
-@dp.message_handler(ChatType.is_private, text=["⏮️ Начало опросов"])
-async def info(m: Message):
-    users_table = AioSQLiteWrapper("g35.sqlite", "users")
-    await users_table.set_user_polls_page(m.from_user.id, 0)
-    await polls(m)
+# @dp.message_handler(ChatType.is_private, text=["⏮️ Начало опросов"])
+# async def info(m: Message):
+#     users_table = AioSQLiteWrapper("g35.sqlite", "users")
+#     await users_table.set_user_polls_page(m.from_user.id, 0)
+#     await polls(m)
 
 
 @dp.message_handler(ChatType.is_private, commands=['mailing'])
@@ -360,7 +361,7 @@ async def say_to_g35(m: Message):
     if m.from_user.id in config.admins:
         text = utils.edit_cmd(m.text)
         await bot.send_message(
-            config.matests,
+            config.g35_main,
             text
         )
         await bot.send_animation(
@@ -400,6 +401,13 @@ async def get_photo_id(m: Message):
             f"`{m.photo[-1]['file_id']}`",
             parse_mode=None
         )
+
+
+@dp.message_handler(commands=['leave'])
+async def show_creator(m: Message):
+    if m.from_user.id in config.admins:
+        await bot.leave_chat(config.g35_main)
+        await m.answer("ok")
 
 
 @dp.message_handler(state=Form.message_for_admin)
