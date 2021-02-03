@@ -14,6 +14,7 @@ import config
 import utils
 import keyboards
 import mailing
+import filters
 from check_distance import calculate_distance
 from form import Form
 from database import AioSQLiteWrapper
@@ -33,6 +34,9 @@ logger = logging.getLogger()
 bot = Bot(token=config.token, parse_mode="Markdown")
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
+
+
+dp.filters_factory.bind(filters.AnswerToUserFilter)
 
 
 async def startup(*args):
@@ -127,7 +131,7 @@ async def contact(m: Message):
 
 
 @dp.message_handler(ChatType.is_private, text=["✅ Разработчику на витамины"])
-async def donate(m: Message):
+async def donation(m: Message):
     await m.answer(
         "*QIWI:* https://qiwi.com/n/SUNNYDAY\n\n"
         "*Yandex.Деньги:* `410012455548219`\n\n"
@@ -254,6 +258,102 @@ async def show_all_msc(m: Message):
     )
 
 
+@dp.message_handler(ChatType.is_private, commands=['donate'])
+async def donate(m: Message):
+    await m.answer(
+        "Все функции бота предоставляются совершенно бесплатно. Но если вы вдруг захотите сделать скромное пожертвование"
+        ", то реквизиты можно найти нажав соответствущие кнопки под этим сообщением. Это совсем необязательно, "
+        "но мне будет как минимум приятно. 😊",
+        reply_markup=keyboards.donate()
+    )
+
+
+@dp.callback_query_handler(lambda callback_query: callback_query.data == 'btc')
+async def cb_q(cb: types.CallbackQuery):
+    await bot.delete_message(
+        cb.from_user.id,
+        cb.message.message_id
+    )
+    await asyncio.sleep(0.1)
+    await bot.send_photo(
+        cb.from_user.id,
+        photo="AgACAgIAAxkBAAIcJWAKZzx5EkubNw_-hGuPCmSVoqUPAAKXrzEbdhlQSIwkCPRJjHxU9Ehdmi4AAwEAAwIAA3gAA8-1AwABHgQ",
+        caption="Bitcoin: \n\n`bc1q9tsphew7avkzpu8nwp36fjmdsv3vn8mq76pxt8`",
+        reply_markup=keyboards.donate()
+    )
+
+
+@dp.callback_query_handler(lambda callback_query: callback_query.data == 'ltc')
+async def cb_q(cb: types.CallbackQuery):
+    await bot.delete_message(
+        cb.from_user.id,
+        cb.message.message_id
+    )
+    await asyncio.sleep(0.1)
+    await bot.send_photo(
+        cb.from_user.id,
+        photo="AgACAgIAAxkBAAIcI2AKZxI5bUbwHJ8WMBywzV41n_j4AAKWrzEbdhlQSGFwtLkvjxadLrKUly4AAwEAAwIAA3gAAxzvBQABHgQ",
+        caption="Litecoin: \n\n`ltc1qxmmjmuvutz5qddeqqyz0v35vc3e75gm688tn9h`",
+        reply_markup=keyboards.donate()
+    )
+
+
+@dp.callback_query_handler(lambda callback_query: callback_query.data == 'eth')
+async def cb_q(cb: types.CallbackQuery):
+    await bot.delete_message(
+        cb.from_user.id,
+        cb.message.message_id
+    )
+    await asyncio.sleep(0.1)
+    await bot.send_photo(
+        cb.from_user.id,
+        photo="AgACAgIAAxkBAAIcIWAKZudsVg8fqSrBFAV6lTzkVFgKAAKVrzEbdhlQSLdag18DN5q36M0smy4AAwEAAwIAA3gAA1ifAQABHgQ",
+        caption="Etherium: \n\n`0x6e4a6E3714cc40692d53c94A341c60682095fbc8`",
+        reply_markup=keyboards.donate()
+    )
+
+
+@dp.callback_query_handler(lambda callback_query: callback_query.data == 'xmr')
+async def cb_q(cb: types.CallbackQuery):
+    await bot.delete_message(
+        cb.from_user.id,
+        cb.message.message_id
+    )
+    await asyncio.sleep(0.1)
+    await bot.send_photo(
+        cb.from_user.id,
+        photo="AgACAgIAAxkBAAIcH2AKZqfNgIrWePQtRXRk8gQX9sHEAAKUrzEbdhlQSG5HBFPw7lxyifsamC4AAwEAAwIAA3gAA1v0BQABHgQ",
+        caption="Monero: \n\n`8BN7ZCCfdVCg4kjARpStV26jdqPX7FuhfKtGVbACWVi5MSmEDgc99SfFGWSF7zyQTEUWgMPXZQNxeT9f3ccETx2y9sBZJdo`",
+        reply_markup=keyboards.donate()
+    )
+
+
+@dp.callback_query_handler(lambda callback_query: callback_query.data == 'qiwi')
+async def cb_q(cb: types.CallbackQuery):
+    await bot.delete_message(
+        cb.from_user.id,
+        cb.message.message_id
+    )
+    await asyncio.sleep(0.1)
+    await cb.message.answer(
+        "QIWI (перевод по никнейму): \n\nhttps://qiwi.com/n/SUNNYDAY",
+        reply_markup=keyboards.donate()
+    )
+
+
+@dp.callback_query_handler(lambda callback_query: callback_query.data == 'yandex')
+async def cb_q(cb: types.CallbackQuery):
+    await bot.delete_message(
+        cb.from_user.id,
+        cb.message.message_id
+    )
+    await asyncio.sleep(0.1)
+    await cb.message.answer(
+        "Кошелек Yandex.Деньги: \n\n`410012455548219`\n\n",
+        reply_markup=keyboards.donate()
+    )
+
+
 @dp.message_handler(ChatType.is_private, content_types=['location'])
 async def proc_location(m: Message):
     user_coords = (m.location.latitude, m.location.longitude)  # координаты пользователя
@@ -321,21 +421,13 @@ async def info(m: Message):
         await polls(m)
 
 
-# @dp.message_handler(ChatType.is_private, text=["⏮️ Начало опросов"])
-# async def info(m: Message):
-#     users_table = AioSQLiteWrapper("g35.sqlite", "users")
-#     await users_table.set_user_polls_page(m.from_user.id, 0)
-#     await polls(m)
-
-
-@dp.message_handler(ChatType.is_private, commands=['mailing'])
+@dp.message_handler(ChatType.is_private, commands=['mailing'], user_id=config.admins)
 async def start_mailing(m: Message):
-    if m.from_user.id in config.admins:
-        await m.answer(
-            "Отправьте мне сообщение для рассылки",
-            reply_markup=keyboards.canceling()
-        )
-        await Form.message_template.set()
+    await m.answer(
+        "Отправьте мне сообщение для рассылки",
+        reply_markup=keyboards.canceling()
+    )
+    await Form.message_template.set()
 
 
 @dp.message_handler(state=Form.message_template)
@@ -351,23 +443,6 @@ async def process_msg_template(m: Message, state: FSMContext):
                                 users_ids=all_users_ids,
                                 text=m.text)
     await state.finish()
-
-
-@dp.message_handler(ChatType.is_private, commands=['g35'])
-async def say_to_g35(m: Message):
-    """
-    Сказать от имени бота в G35
-    """
-    if m.from_user.id in config.admins:
-        text = utils.edit_cmd(m.text)
-        await bot.send_message(
-            config.g35_main,
-            text
-        )
-        await bot.send_animation(
-            chat_id=config.matests,
-            animation="AAMCAgADGQEAAhqvXueMLoIs36dZrmU_cI1hrYoRBoQAAkMGAAKdpiFJRp2_h30a5ePbScoOAAQBAAdtAAO2fAACGgQ"
-        )
 
 
 @dp.message_handler(commands=['myid'])
@@ -391,23 +466,39 @@ async def show_creator(m: Message):
     )
 
 
-@dp.message_handler(ChatType.is_private, content_types=['photo'])
+@dp.message_handler(ChatType.is_private, content_types=['photo'], user_id=config.admins)
 async def get_photo_id(m: Message):
     """
     Возвращает админу бота ID отправленного фото.
     """
-    if m.from_user.id in config.admins:
-        await m.answer(
-            f"`{m.photo[-1]['file_id']}`",
-            parse_mode=None
+    await m.answer(
+        f"`{m.photo[-1]['file_id']}`",
+        parse_mode=None
+    )
+
+
+@dp.callback_query_handler(answer_user=True)
+async def set_answer_to_user(cb: types.CallbackQuery):
+    await cb.message.answer(
+        "введите сообщение для ответа юзеру",
+        reply_markup=keyboards.cancel()
+    )
+    user_id = cb.data.split("answer_user")[1]
+    with open('user.json', 'w') as file:
+        json.dump({"user_id": user_id}, file, indent=2, ensure_ascii=False)
+    await Form.answer_to_user.set()
+
+
+@dp.message_handler(state=Form.answer_to_user)
+async def process_answer_to_user(m: Message, state: FSMContext):
+    if m.text != "Отмена 🚫":
+        user_id = json.load(open('user.json'))["user_id"]
+        await bot.send_message(
+            user_id,
+            m.text
         )
-
-
-@dp.message_handler(commands=['leave'])
-async def show_creator(m: Message):
-    if m.from_user.id in config.admins:
-        await bot.leave_chat(config.g35_main)
-        await m.answer("ok")
+    await state.finish()
+    await main_menu(m)
 
 
 @dp.message_handler(state=Form.message_for_admin)
@@ -419,7 +510,16 @@ async def process_msg_to_admin(m: Message, state: FSMContext):
     elif m.text == "✅ Отправить":
         users_table = AioSQLiteWrapper("g35.sqlite", "users")
         msg_id = await users_table.get_saved_message_id(m.from_user.id)
+
         await bot.forward_message(config.main_admin, m.chat.id, msg_id)
+
+        await asyncio.sleep(0.2)
+        await bot.send_message(
+            config.main_admin,
+            f"Сообщение от пользователя {m.from_user.id}",
+            reply_markup=keyboards.answer_to_user(m.from_user.id)
+        )
+
         await asyncio.sleep(1)
         await m.answer('✅ Ваше сообщение передано администратору',
                        reply_markup=keyboards.main_menu())

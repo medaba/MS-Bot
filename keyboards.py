@@ -71,6 +71,14 @@ def message_for_admin_yes_no():
     )
     return markup
 
+
+def cancel():
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    markup.add(
+        KeyboardButton("Отмена 🚫")
+    )
+    return markup
+
 def about_bot():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add(
@@ -92,4 +100,27 @@ def polls_navigation():
     )
     markup.add(
         KeyboardButton("👑 Главное меню"))
+    return markup
+
+
+def donate():
+    markup = InlineKeyboardMarkup(row_width=4)
+    markup.add(
+        InlineKeyboardButton(text="Qiwi", callback_data="qiwi"),
+        InlineKeyboardButton(text="Yandex", callback_data="yandex")
+    )
+    markup.add(
+        InlineKeyboardButton(text="Bitcoin", callback_data="btc"),
+        InlineKeyboardButton(text="Litecoin", callback_data="ltc"),
+        InlineKeyboardButton(text="Etherium", callback_data="eth"),
+        InlineKeyboardButton(text="Monero", callback_data="xmr")
+    )
+    return markup
+
+
+def answer_to_user(user_id):
+    markup = InlineKeyboardMarkup()
+    cb_data = f"answer_user{user_id}"
+    markup.add(
+        InlineKeyboardButton(text='Ответить', callback_data=cb_data))
     return markup
