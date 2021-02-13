@@ -4,9 +4,7 @@ import asyncio
 from time import time
 
 from loader import bot
-from keyboards import reply_kb
 from utils.db_api import users_table
-# from database import AioSQLiteWrapper
 
 
 async def start_mailing(admin_id, users_ids, text):
@@ -62,6 +60,6 @@ async def process_inactive_users(failed_users_ids):
     """
     try:
         for user in failed_users_ids:
-            await users_table.set_user_inactive(user)
+            await users_table.deactivate_user(user)
     except Exception as e:
         print(e)
