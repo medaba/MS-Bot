@@ -3,12 +3,14 @@
 import asyncio
 from time import time
 
-from main import bot, logger
-from database import AioSQLiteWrapper
+from loader import bot
+from keyboards import reply_kb
+from utils.db_api import users_table
+# from database import AioSQLiteWrapper
 
 
 async def start_mailing(admin_id, users_ids, text):
-    if text == 'Отмена':
+    if text == "🚫 Отмена":
         await bot.send_message(admin_id, 'Рассылка отменена')
         return
 
@@ -23,13 +25,14 @@ async def start_mailing(admin_id, users_ids, text):
             await bot.send_message(
                 user_id,
                 text,
+                parse_mode="HTML",
                 disable_web_page_preview=True,
                 disable_notification=True
             )
             mailing_report['ok'] += 1
-        except:
+        except Exception as e:
+            print(f"{user_id}\n\n {e}\n\n")
             failed_users_ids.append(user_id)
-            logger.error(f"{user_id} MAILING FAILED")
             mailing_report['fail'] += 1
 
     end_time = time() - start_time
@@ -58,9 +61,7 @@ async def process_inactive_users(failed_users_ids):
     и устанавливает им в БД active=0
     """
     try:
-        users_table = AioSQLiteWrapper("g35.sqlite", "users")
         for user in failed_users_ids:
             await users_table.set_user_inactive(user)
     except Exception as e:
         print(e)
-        logger.error(e)

@@ -2,7 +2,7 @@
 
 from geopy.distance import distance
 
-from database import AioSQLiteWrapper
+from utils.db_api import mscenter_table
 
 
 async def calculate_distance(user_coords):
@@ -10,7 +10,6 @@ async def calculate_distance(user_coords):
     Принимает координаты пользователя,
     Возвращает Дистанцию от пользователя до ближайшего РСЦ из БД и адрес этого РСЦ.
     """
-    mscenter_table = AioSQLiteWrapper("g35.sqlite", "mscenter")
     all_msc = await mscenter_table.fetch_all()  # список кортежей рс-центров из БД
     best_distance = 999999999999999             # "максимально невозможное" расстояние от юзера до рсц
     best_address = None

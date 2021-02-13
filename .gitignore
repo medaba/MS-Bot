@@ -1,0 +1,11 @@
+*.sqlite
+*.db
+*.log
+*.env
+*.json
+Pipfile
+Pipfile.lock
+files/
+venv/
+__pycache__/
+.idea/

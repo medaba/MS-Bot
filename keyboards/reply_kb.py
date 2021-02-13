@@ -1,18 +1,23 @@
 # -*- coding: utf-8 -*-
 
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import Message
+
+import config
 
 
-def main_menu():
-    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+def main_menu(m: Message):
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add(
         KeyboardButton("🤖 О Боте"),
         KeyboardButton('💻 Ссылки'),
-    ).add(
         KeyboardButton("🧑‍⚕️ РС-Центры"),
         KeyboardButton("📜 Опросы")
     )
+    if m.from_user.id in config.ADMINS:
+        markup.add(
+            KeyboardButton("✉️ Рассылка")
+        )
     return markup
 
 
@@ -29,19 +34,12 @@ def links():
     return markup
 
 
-def contacts():
-    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
-    markup.add(
-        KeyboardButton(text="✅ Разработчику на витамины"),
-        KeyboardButton("👑 Главное меню")
-    )
-    return markup
-
-
-def source_code():
-    markup = InlineKeyboardMarkup(row_width=1)
-    markup.add(InlineKeyboardButton(text="👨‍💻 GitHub", url="https://github.com/medaba/MS-Bot"))
-    return markup
+# def contacts():
+#     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+#     markup.add(
+#         KeyboardButton("👑 Главное меню")
+#     )
+#     return markup
 
 
 def msc():
@@ -57,8 +55,16 @@ def msc():
 def canceling():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
     markup.add(
-        KeyboardButton("Отмена"),
+        KeyboardButton("🚫 Отмена"),
         KeyboardButton("👑 Главное меню")
+    )
+    return markup
+
+
+def cancel():
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    markup.add(
+        KeyboardButton("🚫 Отмена")
     )
     return markup
 
@@ -72,20 +78,13 @@ def message_for_admin_yes_no():
     return markup
 
 
-def cancel():
-    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    markup.add(
-        KeyboardButton("Отмена 🚫")
-    )
-    return markup
-
 def about_bot():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add(
         KeyboardButton("☎️ Контакты"),
-        KeyboardButton("⚠️ Дисклеймер"),
         KeyboardButton("👨‍💻 Исходный код"),
-        KeyboardButton("👾 QR-ссылка")
+        KeyboardButton("✅ На витамины"),
+        KeyboardButton(text="⚠️ Дисклеймер")
     ).add(
         KeyboardButton("👑 Главное меню")
     )
@@ -93,34 +92,9 @@ def about_bot():
 
 
 def polls_navigation():
-    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add(
         KeyboardButton("◀️ Назад"),
-        KeyboardButton("Вперед ▶️")
-    )
-    markup.add(
+        KeyboardButton("Вперед ▶️"),
         KeyboardButton("👑 Главное меню"))
-    return markup
-
-
-def donate():
-    markup = InlineKeyboardMarkup(row_width=4)
-    markup.add(
-        InlineKeyboardButton(text="Qiwi", callback_data="qiwi"),
-        InlineKeyboardButton(text="Yandex", callback_data="yandex")
-    )
-    markup.add(
-        InlineKeyboardButton(text="Bitcoin", callback_data="btc"),
-        InlineKeyboardButton(text="Litecoin", callback_data="ltc"),
-        InlineKeyboardButton(text="Etherium", callback_data="eth"),
-        InlineKeyboardButton(text="Monero", callback_data="xmr")
-    )
-    return markup
-
-
-def answer_to_user(user_id):
-    markup = InlineKeyboardMarkup()
-    cb_data = f"answer_user{user_id}"
-    markup.add(
-        InlineKeyboardButton(text='Ответить', callback_data=cb_data))
     return markup
