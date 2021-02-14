@@ -94,8 +94,8 @@ async def cb_q(cb: types.CallbackQuery):
     await asyncio.sleep(0.1)
     await cb.message.answer(
         "*QIWI* \n\n"
-        "Перевод с карты или qiwi-кошелька: "
-        "[ссылка](https://my.qiwi.com/Vyktor-ZgkLrmtvQR?noCache=true)",
+        "Перевод на qiwi с карты или qiwi-кошелька: "
+        "[ССЫЛКА](https://my.qiwi.com/Vyktor-ZgkLrmtvQR?noCache=true)",
         reply_markup=inline_kb.donate(),
         disable_web_page_preview=True
     )
