@@ -10,6 +10,6 @@ TOKEN = os.getenv("TOKEN")
 CREATOR = os.getenv("CREATOR")
 MAIN_ADMIN = os.getenv("MAIN_ADMIN")
 
-ADMINS = os.getenv("DEV_ADMINS").split(':')
+ADMINS = os.getenv("ADMINS").split(':')
 ADMINS = [int(user_id) for user_id in ADMINS]
 

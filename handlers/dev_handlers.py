@@ -5,11 +5,11 @@ from aiogram.types import Message
 from loader import bot, dp
 
 
-# @dp.message_handler(is_private=True, not_admin=True)
-# async def non_dev(m: Message):
-#     await m.answer(
-#         "👨‍💻 Ведутся технические работы, попробуйте повторить запрос позднее."
-#     )
+@dp.message_handler(is_private=True, not_admin=True)
+async def non_dev(m: Message):
+    await m.answer(
+        "👨‍💻 Ведутся технические работы, попробуйте повторить запрос позднее."
+    )
 
 
 # @dp.message_handler(is_private=True)
