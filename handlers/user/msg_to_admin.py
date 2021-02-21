@@ -9,6 +9,14 @@ from loader import dp, bot
 from utils.db_api import users_table
 
 
+@dp.message_handler(is_private=True, text_startswith="🏥 РС-центры в городе")
+async def x(m: Message):
+    """
+    Будет ловить и отсеивать сообщения переданные через инлайн-режим
+    """
+    pass
+
+
 @dp.message_handler(is_private=True)
 async def all_messages(m: Message):
     """

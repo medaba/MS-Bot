@@ -34,14 +34,6 @@ def links():
     return markup
 
 
-# def contacts():
-#     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
-#     markup.add(
-#         KeyboardButton("👑 Главное меню")
-#     )
-#     return markup
-
-
 def msc():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add(
@@ -81,10 +73,10 @@ def message_for_admin_yes_no():
 def about_bot():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     markup.add(
-        KeyboardButton("☎️ Контакты"),
-        KeyboardButton("👨‍💻 Исходный код"),
         KeyboardButton("✅ На витамины"),
-        KeyboardButton(text="⚠️ Дисклеймер")
+        KeyboardButton("👨‍💻 Исходный код"),
+        KeyboardButton("☎️ Контакты"),
+        KeyboardButton("⚠️ Дисклеймер")
     ).add(
         KeyboardButton("👑 Главное меню")
     )
