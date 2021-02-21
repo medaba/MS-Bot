@@ -2,7 +2,7 @@
 
 from . import dev_handlers
 from . import admin
-from .user import start
+from .inline_mode import inline
 from .user import default
 from .user import fsm_handlers
 from .user import main_handlers

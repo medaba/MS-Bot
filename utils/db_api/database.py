@@ -53,6 +53,15 @@ class Database:
             return await db.execute_fetchall(f"""SELECT * FROM {self.table_name}""")
 
 
+    async def fetch_all_msc_in_city(self, city: str):
+        async with aiosqlite.connect(self.db_path) as db:
+            city = city.title()
+
+            result = await db.execute_fetchall(f"""SELECT * FROM {self.table_name} WHERE city=?""",
+                                               parameters=(city, ))
+            return result
+
+
     async def fetch_all_active_users(self):
         async with aiosqlite.connect(self.db_path) as db:
             lst_ids_tuples = await db.execute_fetchall(f"""SELECT user_id FROM users WHERE active=1""")
@@ -121,4 +130,6 @@ class Database:
 
 if __name__ == '__main__':
     users_table = Database("data/g35.sqlite", "users")
-    print(asyncio.run(users_table.fetch_all_active_users()))
+    mscenter_table = Database(db_path="data/g35.sqlite", table_name="mscenter")
+    asyncio.run(mscenter_table.fetch_all_msc_in_city("Москва"))
+    # print(asyncio.run(users_table.fetch_all_active_users()))

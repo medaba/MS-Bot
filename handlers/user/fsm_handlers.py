@@ -12,7 +12,7 @@ except:
 import config
 import keyboards
 from loader import dp, bot
-from handlers.user.start import main_menu
+from handlers.user.main_handlers import main_menu
 from states import MailingForm, MsgToAdminForm, AnswerToUserForm
 from utils.db_api import users_table
 from utils.misc import mailing
@@ -45,7 +45,7 @@ async def process_msg_to_admin(m: Message, state: FSMContext):
         await asyncio.sleep(0.2)
         await bot.send_message(
             config.MAIN_ADMIN,
-            f"Сообщение от пользователя {m.from_user.id}",
+            f"Сообщение от пользователя {m.from_user.full_name}, ID: {m.from_user.id}",
             reply_markup=keyboards.inline_kb.answer_to_user(m.from_user.id)
         )
 

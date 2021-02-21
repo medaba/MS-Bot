@@ -7,8 +7,28 @@ import keyboards
 from loader import dp, bot
 from utils.misc import rate_limit
 from utils.db_api import users_table
+from utils.misc import logger
 from utils.misc.check_distance import calculate_distance
 from data.polls_ids import polls_id
+
+
+@rate_limit(limit=1)
+@dp.message_handler(is_private=True, text=["/start", "/restart", "👑 Главное меню"])
+async def main_menu(m: Message):
+    await m.answer(
+        "🤖 *Вы находитесь в главном меню.* \n\n",
+        reply_markup=keyboards.reply_kb.main_menu(m)
+    )
+
+    try:
+        await users_table.fetch_user_by_id(m.from_user.id)        # Получить юзера из БД
+        await users_table.activate_user(m.from_user.id)           # Включение статуса active
+        await users_table.set_user_polls_page(m.from_user.id, 0)  # Обнуление счетчика страниц опросов
+    except:
+        # Добавление нового юзера в БД.
+        await users_table.add_user(m.from_user.id, m.from_user.full_name, m.from_user.username)
+        print(f"Добавлен пользователь: {m.from_user.full_name}, {m.from_user.id}.")
+        logger.info(f"Добавлен пользователь: {m.from_user.full_name}, {m.from_user.id}.")
 
 
 @rate_limit(limit=1)
