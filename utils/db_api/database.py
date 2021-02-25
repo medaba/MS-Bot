@@ -1,8 +1,16 @@
 # -*- coding: utf-8 -*-
 
-
+import sqlite3
 import aiosqlite
 import asyncio
+
+
+def fetch_all_city_names():
+    with sqlite3.connect("data/g35.sqlite") as conn:
+        cursor = conn.cursor()
+        all_rows = cursor.execute(f"""SELECT * FROM mscenter""")
+    all_cities = list({city[1] for city in all_rows})
+    return all_cities
 
 
 class Database:
@@ -60,6 +68,13 @@ class Database:
             result = await db.execute_fetchall(f"""SELECT * FROM {self.table_name} WHERE city=?""",
                                                parameters=(city, ))
             return result
+
+
+    async def fetch_all_city_names(self):
+        async with aiosqlite.connect(self.db_path) as db:
+            all_rows = await self.fetch_all()
+        all_cities = {city[1] for city in all_rows}
+        return all_cities
 
 
     async def fetch_all_active_users(self):
@@ -131,5 +146,6 @@ class Database:
 if __name__ == '__main__':
     users_table = Database("data/g35.sqlite", "users")
     mscenter_table = Database(db_path="data/g35.sqlite", table_name="mscenter")
-    asyncio.run(mscenter_table.fetch_all_msc_in_city("Москва"))
+    # asyncio.run(mscenter_table.fetch_all_msc_in_city("Москва"))
+    print(asyncio.run(mscenter_table.fetch_all_cities()))
     # print(asyncio.run(users_table.fetch_all_active_users()))
