@@ -13,3 +13,4 @@ MAIN_ADMIN = os.getenv("MAIN_ADMIN")
 ADMINS = os.getenv("ADMINS").split(':')
 ADMINS = [int(user_id) for user_id in ADMINS]
 
+MS_CENTERS = "https://telegra.ph/Spisok-RS-Centrov-02-04-2"

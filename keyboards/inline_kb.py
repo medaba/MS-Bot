@@ -31,3 +31,8 @@ def answer_to_user(user_id):
         InlineKeyboardButton(text='Ответить', callback_data=cb_data))
     return markup
 
+
+def bot_link():
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton(text="🤖 Перейти к боту", url="https://t.me/g35_robot"))
+    return markup

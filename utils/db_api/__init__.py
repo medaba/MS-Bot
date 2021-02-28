@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import asyncio
 from .database import Database, fetch_all_city_names
 
 users_table = Database(db_path="data/g35.sqlite", table_name="users")
