@@ -16,7 +16,7 @@ async def on_startup(*args):
 
     import handlers
 
-    await on_startup_notify(dp)
+    await on_startup_notify()
     await set_bot_commands(dp)
     print("bot launched")
 

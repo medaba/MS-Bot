@@ -6,6 +6,7 @@ from aiogram.types import Message
 import config
 import keyboards
 from loader import dp, bot
+from utils import notify_admins
 from utils.misc import rate_limit
 from utils.db_api import users_table
 from utils.misc import logger
@@ -30,6 +31,7 @@ async def main_menu(m: Message):
         await users_table.add_user(m.from_user.id, m.from_user.full_name, m.from_user.username)
         print(f"Добавлен пользователь: {m.from_user.full_name}, {m.from_user.id}.")
         logger.info(f"Добавлен пользователь: {m.from_user.full_name}, {m.from_user.id}.")
+        await notify_admins.new_user_notify(m)
 
 
 @rate_limit(limit=1)
@@ -56,8 +58,8 @@ async def info(m: Message):
 async def contact(m: Message):
     await m.answer(
         "👨‍💻 *Контакты для связи с разработчиком.* \n\n"
-        "Если у вас есть какие-либо замечания или предложения, "
-        "вы всегда можете написать на мой рабочий аккаунт: \n\n[ᗩᒪᗷOT](https://t.me/alotofbots)",
+        "Если у вас есть какие-либо замечания, предложения, или вы обнаружили какой-то баг в работе бота,"
+        " пишите на мой рабочий аккаунт: \n\n[ᗩᒪᗷOT](https://t.me/alotofbots)",
         parse_mode="Markdown",
         disable_web_page_preview=True
     )
@@ -84,6 +86,7 @@ async def donation(m: Message):
         "\n\nЭто совершенно необязательно, но мне будет как минимум приятно. 😊",
         reply_markup=keyboards.inline_kb.donate()
     )
+    await notify_admins.donate_notify(m)
     
 
 @rate_limit(limit=1)

@@ -13,13 +13,11 @@ def source_code():
 def donate():
     markup = InlineKeyboardMarkup(row_width=2)
     markup.add(
-        InlineKeyboardButton(text="Qiwi", callback_data="qiwi")
+        InlineKeyboardButton(text="Qiwi/Card", callback_data="qiwi")
     )
     markup.add(
         InlineKeyboardButton(text="Bitcoin", callback_data="btc"),
-        InlineKeyboardButton(text="Litecoin", callback_data="ltc"),
-        InlineKeyboardButton(text="Etherium", callback_data="eth"),
-        InlineKeyboardButton(text="Monero", callback_data="xmr")
+        InlineKeyboardButton(text="Litecoin", callback_data="ltc")
     )
     return markup
 
