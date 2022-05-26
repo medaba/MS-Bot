@@ -16,6 +16,6 @@ multidict==5.1.0
 python-dotenv==0.15.0
 pytz==2020.5
 typing-extensions==3.7.4.3
-ujson==4.0.1
+ujson==5.2.0
 uvloop==0.14.0
 yarl==1.6.3
